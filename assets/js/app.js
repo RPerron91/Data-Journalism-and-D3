@@ -57,10 +57,8 @@ d3.csv("../assets/data/data.csv", function(data) {
       .range([0, chartWidth]);
       
   // Set scales to corresponding Axes
-  var yAxis = d3.axisLeft(yScale)
-                .ticks(10);
-  var xAxis = d3.axisBottom(xScale)
-                .ticks(10);
+  var yAxis = d3.axisLeft(yScale).ticks(10);
+  var xAxis = d3.axisBottom(xScale);
   
   // set x to the x axis
   chartGroup.append("g")
@@ -135,9 +133,9 @@ d3.csv("../assets/data/data.csv", function(data) {
       .data(data)
       .enter()
       .append("circle")
-      .attr("cy", data.healthcare)
-      .attr("cx", data.poverty)
-      .attr("r", 15)
+      .attr("cy", yScale(d => d.healthcare))
+      .attr("cx", xScale(d => d.poverty))
+      .attr("r", 10)
       .attr("id", data.state)
       .attr("fill", "blue");
 
