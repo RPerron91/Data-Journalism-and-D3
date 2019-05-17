@@ -34,10 +34,10 @@ var svg = d3.select("#scatter")
   .attr("width", svgWidth);
 
 
-
-
 // Append chart to the SVG area and shift it by margins to fit axis labels
 var chartGroup = svg.append("g")
+  .attr("height", chartHeight)
+  .attr("width", chartWidth)
   .attr("transform", `translate(${chartMargin.left*2}, ${chartMargin.bottom*2})`);
 
 // Load Data from csv and use values for scatter plot points and axes  
@@ -64,11 +64,11 @@ d3.csv("../assets/data/data.csv").then(function(data) {
 
   // scale x to chart width using poverty data for ticks
   var xScale = d3.scaleLinear()
-      .domain([d3.min(data, d => d.poverty), d3.max(data, d => d.poverty)])
+      .domain([6, d3.max(data, d => d.poverty)])
       .range([chartMargin.left, chartWidth-chartMargin.left]);
       
   // Set scales to corresponding Axes
-  var yAxis = d3.axisLeft(yScale).ticks(10);
+  var yAxis = d3.axisLeft(yScale);
   var xAxis = d3.axisBottom(xScale);
   
   // set x to the x axis
@@ -83,34 +83,34 @@ d3.csv("../assets/data/data.csv").then(function(data) {
 
 
 
-// Set up switch functions for on(click) events
-//   var xAxis = 'poverty';
+//Set up switch functions for on(click) events
+  // var xAxis = 'poverty';
 
-//   function getXScale(Axis) {
+  // var XScale = function getXScale(Axis) {
 
-//     switch(Axis) {
-//     case 'poverty':
-//       d3.scaleLinear()
-//         .range([0, chartWidth])
-//         .domain(d3.extent(data, d => d.poverty));
-//       break;
+  //   switch(Axis) {
+  //   case 'poverty':
+  //     d3.scaleLinear()
+  //       .range([0, chartWidth])
+  //       .domain(d3.extent(data, d => d.poverty));
+  //     break;
   
-//     case 'age':
-//       d3.scaleLinear()
-//         .range([0, chartWidth])
-//         .domain(d3.extent(data, d => d.age));
-//       break;
+  //   case 'age':
+  //     d3.scaleLinear()
+  //       .range([0, chartWidth])
+  //       .domain(d3.extent(data, d => d.age));
+  //     break;
 
-//     case 'income':
-//       d3.scaleLinear()
-//         .range([0, chartWidth])
-//         .domain(d3.extent(data, d => d.income));
-//       break;
+  //   case 'income':
+  //     d3.scaleLinear()
+  //       .range([0, chartWidth])
+  //       .domain(d3.extent(data, d => d.income));
+  //     break;
 
-//     };
-//   };
+  //   };
+  // };
 
-//   getXScale(xAxis);
+  // XScale(xAxis);
 
 //   var yAxis = 'healthcare';
 
@@ -140,37 +140,42 @@ d3.csv("../assets/data/data.csv").then(function(data) {
 //   getYScale(yAxis)
 
   // setup properties of circles to be displayed on the graph
-  var circles = chartGroup.selectAll("circle")
+  var circledata = chartGroup.selectAll("circle")
       .data(data)
       .enter()
       .append("circle")
       .attr("cy", d=> yScale(d.healthcare))
       .attr("cx", d=> xScale(d.poverty))
-      .attr("r", "8")
+      .attr("r", "10")
       .classed("stateCircle", true);
 
-    // var circleText = chartGroup.select("circle")
-    //   .data(data.abbr)
-    //   .append("text")
-    //   .attr("y", d=> yScale(d.healthcare))
-    //   .attr("x", d=> xScale(d.poverty))
-    //   .classed("stateText", true);
+  var circleText = chartGroup.selectAll("text")
+      .data(data)
+      .enter()
+      .append("text")
 
-  var toolTip = d3.select("body")
-    .append("div")
-    .classed("d3-tip", true);
+  var text = circleText
+      .attr("y", d=> yScale(d.healthcare))
+      .attr("x", d=> xScale(d.poverty))
+      .text(d => {return d.abbr})
+      .classed("stateText", true);
+  
+
+  var toolTip = d3.select("circle")
+    .append("text")
+    .classed("d3-tip", true)
+    .attr("display", "none");
 
   //append circles with mouseover event
-  circles.on("mouseover", d => {
+  circledata.on("mouseover", d => {
     console.log(d.abbr)
     toolTip.style("display", "block")
       .html(
-      `<strong>${d.state}<strong><hr>${d.poverty}
-  percent of population in poverty<hr>${d.healthcare}
-  percent of population without healthcare`)
-      .style("left", d3.event.pageX + "px")
-      .style("top", d3.event.pageY + "px");
+      `<strong>${d.state}<strong>`);
   })
+      .on("mousout"),function() {
+        toolTip.style("display", "none");
+      }
 
   // append title(s) to bottom center of chart
   chartGroup.append("text")
